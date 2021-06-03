@@ -62,3 +62,15 @@ def refresh():
     return {
         "access_token": access_token
     }, HTTPStatus.OK
+
+@authentication.route("/data/user/<int:user_id>", methods=["GET"])
+def data_user(user_id):
+    verify_user: UsersModel = UsersModel.query.filter_by(user_id=user_id).first()
+
+    if not verify_user:
+        return {"messagem": "User not found"}, HTTPStatus.NOT_FOUND
+    
+    return {
+        "name": verify_user.name,
+        "email": verify_user.email
+    }, HTTPStatus.OK

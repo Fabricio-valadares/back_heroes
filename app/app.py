@@ -8,10 +8,10 @@ from flask_cors import CORS
 
 def create_app():
     app = Flask(__name__)
-    CORS(app)
 
     configurations.init_app(app)
-    
+    CORS(app)
+
     database.init_app(app)
     migrations.init_app(app)
     views.init_app(app)

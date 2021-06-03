@@ -1,4 +1,5 @@
 from flask import Blueprint, request, current_app
+from flask.json import jsonify
 from app.models.casos_model import Casos
 from app.models.users_model import UsersModel
 from flask_jwt_extended import jwt_required
@@ -37,16 +38,19 @@ def create_casos(user_id):
 
 @casos.route("/list_casos", methods=["GET"])
 def list_casos():
+    session = current_app.db.session
 
-    list_casos_db = Casos.query.all()
-
-    return {
-        "Casos": [{
-            "title": element_caso.title,
-            "description": element_caso.decription,
-            "value": element_caso.value
-            } for element_caso in list_casos_db]
-    }, HTTPStatus.OK
+    verify_casos_user = session.query(UsersModel, Casos).join(Casos).all()
+    
+    return jsonify([
+        {
+            "name": user_data.name,
+            "email": user_data.email,
+            "title": caso_data.title,
+            "description": caso_data.decription,
+            "value": caso_data.value
+        } for user_data, caso_data in verify_casos_user]
+    ), HTTPStatus.OK
 
 @casos.route("/list_casos/user/<int:user_id>", methods=["GET"])
 @jwt_required()
@@ -58,11 +62,11 @@ def list_casos_users(user_id):
     if not verify_casos_user:
         return {"messagem": "Esse usuário não existe ou não tem casos cadastrado"}, HTTPStatus.OK
 
-    return {
-        "Casos": [{
+    return jsonify([{
+            "name": data_user.name,
+            "email": data_user.email,
             "title": element_caso.title,
             "description": element_caso.decription,
             "value": element_caso.value
-            } for data_user, element_caso in verify_casos_user]
-    }, HTTPStatus.OK
+            } for data_user, element_caso in verify_casos_user]), HTTPStatus.OK
     
